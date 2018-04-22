@@ -9,8 +9,14 @@ import java.util.Random;
 
 public class DBConnector {
 
-    private static String className = "DBConnector";
-    private static Connection connection = initConnection();
+    private static String className;
+    private static Connection connection;
+
+    public static void initDBConnector(){
+        className = "DBConnector";
+        connection = initConnection();
+        checkIfTableExists();
+    }
 
     //Установка соединения с бд
     private static Connection initConnection() {
@@ -26,8 +32,6 @@ public class DBConnector {
             Logger.logError("DriverManager NOT CONNECTED", className);
             Logger.logError(e.toString(), className);
         }
-
-        checkIfTableExists();
 
         return connection;
 

@@ -17,6 +17,10 @@ public class Server {
 
         Logger.log("Сервер запускается", className);
 
+        Logger.log("Инициализирую DBConnector...", className);
+        DBConnector.initDBConnector();
+        Logger.log("DBConnector DONE", className);
+
         Logger.log("Создаю базовые комнаты...", className);
         Broadcaster.createDefaultRooms();
         Logger.log("Базовые комнаты созданы", className);
