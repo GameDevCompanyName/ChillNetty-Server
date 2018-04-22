@@ -17,6 +17,10 @@ public class Server {
 
         Logger.log("Сервер запускается", className);
 
+        Logger.log("Создаю базовые комнаты...", className);
+        Broadcaster.createDefaultRooms();
+        Logger.log("Базовые комнаты созданы", className);
+
         Logger.log("ChannelFactory...", className);
         ChannelFactory factory = new NioServerSocketChannelFactory(
                 Executors.newFixedThreadPool(1),

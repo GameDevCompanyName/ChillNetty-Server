@@ -17,6 +17,24 @@ public class ServerMethods {
 
     private static String className = "ServerMethods";
 
+    private static void sendMessage(Channel userChannel, String message) {
+        //TODO
+        Logger.log("Пишу сообщение в канал: " + message, className);
+        userChannel.write(message);
+    }
+
+    private static User initUser(Channel userChannel, String login) {
+
+        Logger.log("Инициализирую нового пользователя: " + login, className);
+        String userColor = DBConnector.getUserColor(login);
+        String userRole = DBConnector.getUserRole(login);
+        User newUser = new User(userChannel, login, userColor, userRole);
+
+        Logger.log("Пользователь проинициализирован", className);
+        return newUser;
+
+    }
+
     public static void versionReceived(Channel userChannel, String version) {
 
         Logger.log("Проверяю версию клиента", className);
@@ -50,7 +68,7 @@ public class ServerMethods {
             if (passwordIsCorrect){
                 Logger.log("Верный пароль для: " + login, className);
                 User newUser = initUser(userChannel, login);
-                Broadcaster.userLoggedIn(newUser, userChannel);
+                Broadcaster.userLoggedIn(userChannel, newUser);
                 sendUserLoginSuccessMessage(userChannel);
             } else {
                 Logger.log("Неверный пароль для: " + login, className);
@@ -63,7 +81,7 @@ public class ServerMethods {
             DBConnector.insertNewUser(login, password);
             Logger.log("Пользователь создан: " + login, className);
             User newUser = initUser(userChannel, login);
-            Broadcaster.userLoggedIn(newUser, userChannel);
+            Broadcaster.userLoggedIn(userChannel, newUser);
             sendUserLoginSuccessMessage(userChannel);
         }
 
@@ -93,7 +111,17 @@ public class ServerMethods {
 
     }
 
+    private static void disconnectChannel(Channel userChannel) {
+
+        //TODO Разобраться с отключением
+        Logger.log("Отключаю канал от сервера", className);
+        userChannel.close();
+
+    }
+
     public static void joinRoomReceived(Channel userChannel, String roomId) {
+
+        int id = Integer.parseInt(roomId);
 
         Logger.log("Проверяю залогинен ли канал, пытающийся сменить комнату", className);
 
@@ -101,7 +129,7 @@ public class ServerMethods {
 
         if (userIsLogged){
             Logger.log("Канал залогинен, передаю запрос в Broadcaster", className);
-            Broadcaster.roomChangeRequestRecieved(userChannel, roomId);
+            Broadcaster.roomChangeRequestRecieved(userChannel, id);
         } else {
             Logger.log("Канал НЕ залогинен и не может сменить комнату", className);
         }
@@ -110,65 +138,51 @@ public class ServerMethods {
 
     public static void pingReceived(Channel userChannel) {
 
+        Logger.log("Пришёл запрос пинга", className);
         sendPongAnswer(userChannel);
 
     }
 
+    private static void sendValidVersionMessage(Channel userChannel) {
 
-    //Все методы в документации
-//    public static String versionReceived(String version){
-//        String result = "false";
-//        switch (version){
-//            case "JC0.1":
-//                result = version;
-//                break;
-//            case "AC0.1":
-//                result = version;
-//                break;
-//            default:
-//                result="false";
-//                break;
-//        }
-//        return result;
-//    }
-//
-//    public static String loginAttemptReceived(String login, String password){
-//        if(dbConnector.checkLoginAttempt(login, password)){
-//            return login;
-//        }
-//        return "false";
-//    }
-//
-//    public static void messageReceived(String message, String login, String userColor){
-//        Pattern pattern = Pattern.compile("^/[a-zа-яА-ЯA-Z0-9_\\s]+$");
-//        Matcher m;
-//        m = pattern.matcher(message);
-//        //Если команда, то пытаемся вызвать ее
-//        if(m.matches()) {
-//            message = message.substring(1);
-//            String[] command = message.split(" ");
-//            Commands.invoke(command, login);
-//        }
-//        //Иначе отправляем как сообщение в чат
-//        else {
-//            broadcaster.broadcastMessage(broadcaster.getRoomIdByUser(login), ServerMessage.userMessageSend(login, message, userColor));
-//            java.util.Date date = new java.util.Date();
-//            System.out.println("[" + date + "]" + login + ": " + message);
-//        }
-//    }
-//
-//    public static void disconnectReceived(Connection connection, String reason){
-//        System.out.println(Utilities.getStartText("ServerMethods")+connection.getUserName()+" отключился: "+reason);
-//        broadcaster.disconnectClient(connection.getUserName());
-//        connection.disconnect(reason);
-//    }
-//
-//    public static void joinRoomReceived(String userName, String roomId){
-//        broadcaster.removeClientFromRoom(userName);
-//        broadcaster.addClientToRoom(userName, roomId);
-//    }
-//
-//    public static void pingReceived(Connection connection){
-//        connection.sendMessage(ServerMessage.serverPongSend());
-//    }
+        Logger.log("Отправляю сообщение о совместимости версий", className);
+        sendMessage(userChannel, ServerMessage.serverValidVersion());
+
+    }
+
+    private static void sendInvalidVerisonMessage(Channel userChannel) {
+
+        Logger.log("Отправляю сообщение о несовместимой версии", className);
+        sendMessage(userChannel, ServerMessage.serverInvalidVersion());
+
+    }
+
+    private static void sendUserAlreadyOnlineMessage(Channel userChannel) {
+
+        Logger.log("Отправляю сообщение о том, что такой пользователь уже залогинен", className);
+        sendMessage(userChannel, ServerMessage.loginAlreadyError());
+
+    }
+
+    private static void sendUserLoginSuccessMessage(Channel userChannel) {
+
+        Logger.log("Отправляю сообщение об удачном логине", className);
+        sendMessage(userChannel, ServerMessage.loginSuccess());
+
+    }
+
+    private static void sendWrongPasswordMessage(Channel userChannel) {
+
+        Logger.log("Отправляю сообщение о неверном пароле", className);
+        sendMessage(userChannel, ServerMessage.loginWrongError());
+
+    }
+
+    private static void sendPongAnswer(Channel userChannel) {
+
+        Logger.log("Отправляю ответ на эхо-запрос", className);
+        sendMessage(userChannel, ServerMessage.serverPong());
+
+    }
+
 }

@@ -126,7 +126,7 @@ public class DBConnector {
             pstmt.setString(1, role);
             pstmt.setString(2, login);
             pstmt.executeUpdate();
-            broadcaster.getConnectionByLogin(login).updateRole(role);
+            Broadcaster.changeUserRole(login, role);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -140,7 +140,7 @@ public class DBConnector {
             pstmt.setString(1, color);
             pstmt.setString(2, login);
             pstmt.executeUpdate();
-            broadcaster.getConnectionByLogin(login).updateColor(color);
+            Broadcaster.changeUserColor(login, color);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -164,7 +164,7 @@ public class DBConnector {
     }
 
     //Получить цвет пользователя
-    public String getUserColor(String login){
+    public static String getUserColor(String login){
         String sql = "SELECT color FROM Users WHERE login=?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, login);
@@ -180,7 +180,7 @@ public class DBConnector {
     }
 
     //Получить роль пользователя
-    public String getUserRole(String login){
+    public static String getUserRole(String login){
         String sql = "SELECT role FROM Users WHERE login=?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, login);

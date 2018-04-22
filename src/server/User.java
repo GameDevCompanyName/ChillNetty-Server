@@ -2,6 +2,8 @@ package server;
 
 import org.jboss.netty.channel.Channel;
 
+import static server.Constants.START_ROOM_ID;
+
 public class User {
 
     private static String className = "User";
@@ -9,7 +11,7 @@ public class User {
     private Channel userChannel;
     private String color;
     private String role;
-    private String roomId;
+    private int roomId;
 
     public User(Channel userChannel, String login, String color, String role){
         Logger.log("Создаю нового Юзера, Login: " + login, className);
@@ -17,11 +19,47 @@ public class User {
         this.login = login;
         this.color = color;
         this.role = role;
-        roomId = "0";
+        roomId = START_ROOM_ID;
     }
 
     public User(String login){
         this.login = login;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public Channel getUserChannel() {
+        return userChannel;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public int getRoomId() {
+        return roomId;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public void setRoomId(int roomId) {
+        this.roomId = roomId;
+    }
+
+    public void sendMessage(String message) {
+        userChannel.write(message);
     }
 
     @Override
