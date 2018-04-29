@@ -68,8 +68,9 @@ public class ServerMethods {
             if (passwordIsCorrect){
                 Logger.log("Верный пароль для: " + login, className);
                 User newUser = initUser(userChannel, login);
-                Broadcaster.userLoggedIn(userChannel, newUser);
                 sendUserLoginSuccessMessage(userChannel);
+                sendColorToUser(userChannel, login, newUser.getColor());
+                Broadcaster.userLoggedIn(userChannel, newUser);
             } else {
                 Logger.log("Неверный пароль для: " + login, className);
                 sendWrongPasswordMessage(userChannel);
@@ -81,10 +82,20 @@ public class ServerMethods {
             DBConnector.insertNewUser(login, password);
             Logger.log("Пользователь создан: " + login, className);
             User newUser = initUser(userChannel, login);
-            Broadcaster.userLoggedIn(userChannel, newUser);
             sendUserLoginSuccessMessage(userChannel);
+            sendColorToUser(userChannel, login, newUser.getColor());
+            Broadcaster.userLoggedIn(userChannel, newUser);
         }
 
+    }
+
+    private static void sendColorToUser(Channel userChannel, String login, String color) {
+        Logger.log("Отправляю пользователю его цвет", className);
+        try {
+            userChannel.write(ServerMessage.userColor(login, color)).await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void messageReceived(Channel userChannel, String text) {
@@ -185,4 +196,10 @@ public class ServerMethods {
 
     }
 
+    public static void disconnectException(Channel userChannel) {
+
+        Logger.log("Отключаю канал из-за разрыва соединения", className);
+        Broadcaster.userDisconnected(userChannel);
+
+    }
 }

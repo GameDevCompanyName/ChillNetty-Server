@@ -194,4 +194,5 @@ public class ServerMessage {
         object.put("type", "invalidVersion");
         return object.toJSONString();
     }
+
 }

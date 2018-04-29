@@ -17,7 +17,12 @@ public class ServerHandler extends SimpleChannelHandler {
 
         String message = getStringFromBuffer((ChannelBuffer) e.getMessage());
         Logger.log("Получено сообщение: " + message, className);
-        ServerMessage.read(message, e.getChannel());
+
+        String[] parsedMessages = message.split("/d/");
+        for (String string: parsedMessages) {
+            if (!string.equals(""))
+                ServerMessage.read(string, e.getChannel());
+        }
 
     }
 
@@ -32,11 +37,18 @@ public class ServerHandler extends SimpleChannelHandler {
     public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         super.channelClosed(ctx, e);
         Logger.log("Канал закрылся", className);
+        ServerMethods.disconnectReceived(e.getChannel());
+    }
+
+    @Override
+    public void writeComplete(ChannelHandlerContext ctx, WriteCompletionEvent e) throws Exception {
+        super.writeComplete(ctx, e);
     }
 
     @Override
     public void writeRequested(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        String message = (String) e.getMessage();
+        //  /d/ - выступает в качестве разделителя между сообщениями
+        String message = (String) e.getMessage() + "/d/";
         Channels.write(
                 ctx,
                 e.getFuture(),
@@ -45,18 +57,12 @@ public class ServerHandler extends SimpleChannelHandler {
         );
     }
 
-//    private String getStringFromBuffer(ChannelBuffer channelBuffer) throws UnsupportedEncodingException {
-//        int bufSize = channelBuffer.readableBytes();
-//        byte[] byteBuffer = new byte[bufSize];
-//        channelBuffer.readBytes(byteBuffer);
-//        return new String(byteBuffer, "UTF-8");
-//    }
-
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         Logger.log("Словил Exception", className);
         e.getCause().printStackTrace();
         //TODO УДАЛЕНИЕ ОТОВСЮДУ
+        ServerMethods.disconnectException(e.getChannel());
         e.getChannel().close();
     }
 }
