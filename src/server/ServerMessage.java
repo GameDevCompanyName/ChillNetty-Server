@@ -1,8 +1,11 @@
 package server;
 
 import org.jboss.netty.channel.Channel;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+
+import java.util.Collection;
 
 /*
 Статический класс для чтения и упаковки сообщений.
@@ -55,6 +58,12 @@ public class ServerMessage {
             case "ping":
                 Logger.log("Получил пинг-запрос", className);
                 ServerMethods.pingReceived(
+                        userChannel
+                );
+                break;
+            case "requestRoomsInfo":
+                Logger.log("Получил запрос списка комнат", className);
+                ServerMethods.sendRoomsInfo(
                         userChannel
                 );
                 break;
@@ -195,4 +204,23 @@ public class ServerMessage {
         return object.toJSONString();
     }
 
+    public static String roomIds(Collection<Integer> roomIdsList) {
+        JSONArray array = new JSONArray();
+        array.addAll(roomIdsList);
+
+        JSONObject object = new JSONObject();
+        object.put("type", "roomIds");
+        object.put("roomIds", array);
+
+        return object.toJSONString();
+    }
+
+    public static String roomInfo(Room room) {
+        JSONObject object = new JSONObject();
+        object.put("type", "roomInfo");
+        object.put("roomId", room.getId());
+        object.put("roomName", room.getName());
+        object.put("roomPeople", room.getPeopleQuantity());
+        return object.toJSONString();
+    }
 }

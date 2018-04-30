@@ -2,8 +2,10 @@ package server;
 
 import org.jboss.netty.channel.Channel;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class Broadcaster {
 
@@ -16,9 +18,23 @@ public class Broadcaster {
 
     public static void createDefaultRooms(){
 
-        Room main = new Room(0, "Главная");
-        rooms.put(main.getId(), main);
+        addNewRoom(0, "C H I L L");
+        addNewRoom(1, "Gaming");
+        addNewRoom(2, "Таверна");
+        addNewRoom(3, "Подземелье");
+        addNewRoom(4, "Замок");
+        addNewRoom(5, "CINEMA");
+        addNewRoom(6, "Рэп игра");
+        addNewRoom(7, "Вторая мировая");
+        addNewRoom(8, "Третья мировая");
+        addNewRoom(9, "ПОЛИТЕЦК");
+        addNewRoom(10, "афк");
 
+    }
+
+    private static void addNewRoom(int roomId, String roomName) {
+        Room newRoom = new Room(roomId, roomName);
+        rooms.put(newRoom.getId(), newRoom);
     }
 
     public static boolean checkIfUserOnline(String login) {
@@ -85,7 +101,6 @@ public class Broadcaster {
 
     public static void roomChangeRequestRecieved(Channel userChannel, int roomId) {
 
-
         User user = loggedChannels.get(userChannel);
         Logger.log("Обрабатываю запрос на смену комнаты от: " + user.getLogin(), className);
 
@@ -94,6 +109,8 @@ public class Broadcaster {
 
         Room newRoom = rooms.get(roomId);
         newRoom.addUser(user);
+
+        user.setRoomId(roomId);
 
         Logger.log("Смена комнаты для: " + user.getLogin() + " - DONE", className);
 
@@ -147,6 +164,16 @@ public class Broadcaster {
         user.setColor(color);
         Logger.log("Смена цвета для " + login + " - DONE", className);
 
+    }
+
+    public static Collection<Integer> getRoomIds() {
+        Logger.log("Достаю список ID комнат", className);
+        return rooms.keySet();
+    }
+
+    public static Collection<Room> getRooms() {
+        Logger.log("Достаю полный список комнат", className);
+        return rooms.values();
     }
 
 }

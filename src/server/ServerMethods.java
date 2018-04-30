@@ -7,6 +7,9 @@ package server;
 import org.jboss.netty.channel.Channel;
 import sun.rmi.runtime.Log;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -136,15 +139,17 @@ public class ServerMethods {
 
         Logger.log("Проверяю залогинен ли канал, пытающийся сменить комнату", className);
 
-        boolean userIsLogged = Broadcaster.checkIfChannelLogged(userChannel);
-
-        if (userIsLogged){
+        if (userIsLogged(userChannel)){
             Logger.log("Канал залогинен, передаю запрос в Broadcaster", className);
             Broadcaster.roomChangeRequestRecieved(userChannel, id);
         } else {
             Logger.log("Канал НЕ залогинен и не может сменить комнату", className);
         }
 
+    }
+
+    private static boolean userIsLogged(Channel userChannel) {
+        return Broadcaster.checkIfChannelLogged(userChannel);
     }
 
     public static void pingReceived(Channel userChannel) {
@@ -201,5 +206,27 @@ public class ServerMethods {
         Logger.log("Отключаю канал из-за разрыва соединения", className);
         Broadcaster.userDisconnected(userChannel);
 
+    }
+
+    public static void sendRoomsInfo(Channel userChannel) {
+
+        if (userIsLogged(userChannel)){
+            Logger.log("Собираю информацию о комнатах и передаю юзеру", className);
+            sendRoomIds(userChannel, Broadcaster.getRoomIds());
+
+            for (Room room: Broadcaster.getRooms()) {
+                sendRoom(userChannel, room);
+            }
+        }
+
+    }
+
+    private static void sendRoom(Channel userChannel, Room room) {
+        sendMessage(userChannel, ServerMessage.roomInfo(room));
+    }
+
+    private static void sendRoomIds(Channel userChannel, Collection<Integer> roomIds) {
+        Logger.log("Отправляю список айдишников", className);
+        sendMessage(userChannel, ServerMessage.roomIds(roomIds));
     }
 }

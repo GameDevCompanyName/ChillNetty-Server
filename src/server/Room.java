@@ -61,4 +61,11 @@ public class Room {
         }
     }
 
+    public Object getName() {
+        return roomName;
+    }
+
+    public int getPeopleQuantity() {
+        return users.size();
+    }
 }
